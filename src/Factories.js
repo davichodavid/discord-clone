@@ -1,4 +1,4 @@
-import uuid from 'uuid';
+const uuid = require('uuid/v4');
 
 const createUser = (name = '') => ({
   id: uuid(),
@@ -22,4 +22,10 @@ const createChat = (messages = [], name = 'Community', users = []) => ({
 
 const getTime = date => {
   return `${date.getHours()}:${('0' + date.getMinutes()).slice(-2)}`;
+};
+
+module.exports = {
+  createUser,
+  createMessage,
+  createChat
 };
