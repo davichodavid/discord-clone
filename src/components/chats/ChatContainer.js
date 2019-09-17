@@ -1,5 +1,6 @@
 import React, { Component } from 'react'
 import SideBar from './SideBar';
+import { TYPING, MESSAGE_SENT, COMMUNITY_CHAT, MESSAGE_RECEIVED } from '../../Events';
 
 export default class ChatContainer extends Component {
   constructor(props) {
@@ -10,6 +11,55 @@ export default class ChatContainer extends Component {
       activeChat: null,
 
     }
+  }
+
+  componentDidMount() {
+    const { socket } = this.props;
+    socket.emit(COMMUNITY_CHAT, this.resetChat)
+  }
+
+  resetChat = (chat) => {
+    return this.addChat(chat, true);
+  }
+
+  addChat = (chat, reset) => {
+    const { socket } = this.props;
+    const { chats } = this.state;
+
+    const newChats = reset ? [chat] : [...chats, chat];
+    this.setState({ chats: newChats });
+
+    const messageEvent = `${MESSAGE_RECEIVED}-${chat.id}`;
+    const typingEvent = `${TYPING}-${chat.id}`;
+
+    socket.on(typingEvent);
+    socket.on(typingEvent, this.addMessageToChat(chatId));
+  }
+
+  addMessageToChat = chatId => {
+    return message => {
+      const { chats } = this.state;
+      let newChats = chats.map(chat => {
+        if (chatId === chat.id) {
+          chat.messages.push(message)
+        }
+        return chat;
+      })
+      this.setState({ hats: newChats })
+    }
+  }
+
+  updateTypingInChat = chatId => { };
+
+
+  sendMessage = (chatId, message) => {
+    const { socket } = this.props;
+    socket.emit(MESSAGE_SENT, { chatId, message })
+  }
+
+  sendTyping = (chatId, isTyping) => {
+    const { socket } = this.props;
+    socket.emit(TYPING, { chatId, isTyping })
   }
 
   setActiveChat = activeChat => {
@@ -27,6 +77,17 @@ export default class ChatContainer extends Component {
           user={user}
           activeChat={activeChat}
           setActiveChat={this.setActiveChat} />
+        <div className="chat-room-container">
+          {
+            activeChat !== null ? (
+              <div className='chat-room'>
+                <ChatHeading name={activeChat.name} />
+                <Messages messages={activeChat.messages} user={user} typing={activeChat.typingUsers} />
+                <MessageInput sendMessage={message => this.sendMessage(activeChat.id, message)} sendTyping={isTyping => this.sendTyping(activeChat.id, isTyping)} />
+              </div>
+            ) : null
+          }
+        </div>
       </div>
     )
   }
