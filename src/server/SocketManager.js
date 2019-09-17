@@ -22,7 +22,7 @@ module.exports = function (socket) {
     socket.user = user
 
     io.emit(USER_CONNECTED, connectedUsers)
-    // console.log(connectedUsers);
+    console.log(connectedUsers);
 
   });
 
