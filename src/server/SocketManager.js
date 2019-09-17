@@ -1,12 +1,18 @@
 const io = require('./index').io;
 
-const { VERIFY_USER, USER_CONNECTED, LOGOUT } = require('../Events');
+const { VERIFY_USER, USER_CONNECTED, LOGOUT, COMMUNITY_CHAT } = require('../Events');
 const { createUser, createMessage, createChat } = require('../Factories');
 
 let connectedUsers = {};
 
 module.exports = function (socket) {
   console.log('socket id:' + socket.id);
+
+  let communityChat = createChat();
+
+  socket.on(COMMUNITY_CHAT, (callback) => {
+    callback(communityChat);
+  })
 
 
   socket.on(VERIFY_USER, (nickname, callback) => {

@@ -27,7 +27,7 @@ export default class SideBar extends Component {
                 const classNames = (activeChat && activeChat.id === chat.id) ? 'active' : ''
                 return (
                   <div
-                    key='chat.id'
+                    key={chat.id}
                     className={`user ${classNames}`}
                     onClick={() => setActiveChat(chat)}
                   >

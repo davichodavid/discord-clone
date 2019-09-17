@@ -1,6 +1,9 @@
 import React, { Component } from 'react'
 import SideBar from './SideBar';
 import { TYPING, MESSAGE_SENT, COMMUNITY_CHAT, MESSAGE_RECEIVED } from '../../Events';
+import ChatHeading from './ChatHeading';
+import Messages from '../messages/Messages';
+import MessageInput from '../messages/MessageInput';
 
 export default class ChatContainer extends Component {
   constructor(props) {
@@ -33,7 +36,7 @@ export default class ChatContainer extends Component {
     const typingEvent = `${TYPING}-${chat.id}`;
 
     socket.on(typingEvent);
-    socket.on(typingEvent, this.addMessageToChat(chatId));
+    socket.on(messageEvent, this.addMessageToChat(chat.id));
   }
 
   addMessageToChat = chatId => {
@@ -85,7 +88,9 @@ export default class ChatContainer extends Component {
                 <Messages messages={activeChat.messages} user={user} typing={activeChat.typingUsers} />
                 <MessageInput sendMessage={message => this.sendMessage(activeChat.id, message)} sendTyping={isTyping => this.sendTyping(activeChat.id, isTyping)} />
               </div>
-            ) : null
+            ) : <div className="chat-room choose">
+                <h3>Choose a chat</h3>
+              </div>
           }
         </div>
       </div>
