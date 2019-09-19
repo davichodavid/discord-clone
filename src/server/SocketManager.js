@@ -1,6 +1,6 @@
 const io = require('./index').io;
 
-const { VERIFY_USER, USER_CONNECTED, LOGOUT, COMMUNITY_CHAT, USER_DISCONNECTED } = require('../Events');
+const { VERIFY_USER, USER_CONNECTED, LOGOUT, COMMUNITY_CHAT, USER_DISCONNECTED, MESSAGE_RECEIVED } = require('../Events');
 const { createUser, createMessage, createChat } = require('../Factories');
 
 let connectedUsers = {};
@@ -9,6 +9,8 @@ module.exports = function (socket) {
   console.log('socket id:' + socket.id);
 
   let communityChat = createChat();
+
+  let sendMessageToChatfromUser;
 
   socket.on(VERIFY_USER, (nickname, callback) => {
     if (isUser(connectedUsers, nickname)) {
@@ -22,6 +24,8 @@ module.exports = function (socket) {
     user.socketId = socket.id;
     connectedUsers = addUser(connectedUsers, user);
     socket.user = user
+
+    sendMessageToChatfromUser = sendMessageToChat(user.name)
 
     io.emit(USER_CONNECTED, connectedUsers)
     console.log(connectedUsers);
@@ -45,6 +49,16 @@ module.exports = function (socket) {
   socket.on(COMMUNITY_CHAT, (callback) => {
     callback(communityChat);
   })
+
+  socket.on(MESSAGE_RECEIVED, ({ chatId, message }) => {
+    sendMessageToChatfromUser(chatId, message)
+  })
+
+  function sendMessageToChat(sender) {
+    return (chatId, message) => {
+      io.emit(`${MESSAGE_RECEIVED}-${chatId}`, createMessage({ message, sender }));
+    }
+  }
 
   function addUser(userList, user) {
     let newList = Object.assign({}, userList);
