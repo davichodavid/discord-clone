@@ -1,14 +1,14 @@
 const io = require('./index').io;
 
-const { VERIFY_USER, USER_CONNECTED, LOGOUT, COMMUNITY_CHAT, USER_DISCONNECTED, MESSAGE_RECEIVED } = require('../Events');
+const { VERIFY_USER, USER_CONNECTED, LOGOUT, COMMUNITY_CHAT, USER_DISCONNECTED, MESSAGE_RECEIVED, MESSAGE_SENT } = require('../Events');
 const { createUser, createMessage, createChat } = require('../Factories');
 
 let connectedUsers = {};
 
+let communityChat = createChat();
+
 module.exports = function (socket) {
   console.log('socket id:' + socket.id);
-
-  let communityChat = createChat();
 
   let sendMessageToChatfromUser;
 
@@ -50,30 +50,30 @@ module.exports = function (socket) {
     callback(communityChat);
   })
 
-  socket.on(MESSAGE_RECEIVED, ({ chatId, message }) => {
+  socket.on(MESSAGE_SENT, ({ chatId, message }) => {
     sendMessageToChatfromUser(chatId, message)
   })
 
-  function sendMessageToChat(sender) {
-    return (chatId, message) => {
-      io.emit(`${MESSAGE_RECEIVED}-${chatId}`, createMessage({ message, sender }));
-    }
-  }
-
-  function addUser(userList, user) {
-    let newList = Object.assign({}, userList);
-    newList[user.name] = user;
-    return newList;
-  }
-
-  function removeUser(userList, username) {
-    let newList = Object.assign({}, userList)
-    delete newList[username];
-    return newList;
-  }
-
-  function isUser(userList, username) {
-    return username in userList;
-  }
-
 };
+
+function sendMessageToChat(sender) {
+  return (chatId, message) => {
+    io.emit(`${MESSAGE_RECEIVED}-${chatId}`, createMessage({ message, sender }))
+  }
+}
+
+function addUser(userList, user) {
+  let newList = Object.assign({}, userList);
+  newList[user.name] = user;
+  return newList;
+}
+
+function removeUser(userList, username) {
+  let newList = Object.assign({}, userList)
+  delete newList[username];
+  return newList;
+}
+
+function isUser(userList, username) {
+  return username in userList;
+}
